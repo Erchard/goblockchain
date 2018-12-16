@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"../wallet"
+	"encoding/hex"
 	"fmt"
 	"testing"
 	"time"
@@ -17,6 +18,13 @@ func TestFromRaw(t *testing.T) {
 	fmt.Printf("Tx2: %x \n", tx2)
 }
 
+func TestToJson(t *testing.T) {
+	tx := GetNewTransaction()
+	json := ToJson(tx)
+
+	fmt.Println(json)
+}
+
 func GetNewTransaction() Transaction {
 
 	walletSender := wallet.CreateWallet()
@@ -28,11 +36,11 @@ func GetNewTransaction() Transaction {
 		Amount:    1234,
 		Fee:       12,
 		Timestamp: uint32(time.Now().Unix()),
-		PublicKey: walletSender.PublicKey,
-		Signature: []byte{12, 43, 76, 87},
+		PublicKey: hex.EncodeToString(walletSender.PublicKey),
+		Signature: "0f23ab2356",
 	}
 
-	tx.TxHash = ToRaw(tx).TxHash
+	tx.TxHash = hex.EncodeToString(ToRaw(tx).TxHash)
 
 	return tx
 }

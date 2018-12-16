@@ -4,20 +4,21 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"log"
 )
 
 type Transaction struct {
-	TxHash    []byte
-	Block     uint32
-	NoInBlock uint32
-	Sender    string
-	Receiver  string
-	Amount    uint64
-	Fee       uint64
-	Timestamp uint32
-	PublicKey []byte
-	Signature []byte
+	TxHash    string `json:"tx_hash,hex"`
+	Block     uint32 `json:"block"`
+	NoInBlock uint32 `json:"no_in_block"`
+	Sender    string `json:"sender"`
+	Receiver  string `json:"receiver"`
+	Amount    uint64 `json:"amount"`
+	Fee       uint64 `json:"fee"`
+	Timestamp uint32 `json:"timestamp"`
+	PublicKey string `json:"pub_key"`
+	Signature string `json:"signature"`
 }
 
 type TransactionRaw struct {
@@ -54,11 +55,21 @@ func ToRaw(transaction Transaction) TransactionRaw {
 
 	txHash := sha256.Sum256(data)
 
+	pubKey, err := hex.DecodeString(transaction.PublicKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	signature, err := hex.DecodeString(transaction.Signature)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return TransactionRaw{
 		TxHash:    txHash[:],
 		TxData:    data,
-		PublicKey: transaction.PublicKey,
-		Signature: transaction.Signature,
+		PublicKey: pubKey,
+		Signature: signature,
 	}
 }
 
@@ -80,13 +91,22 @@ func FromRaw(raw TransactionRaw) Transaction {
 	timestamp := binary.BigEndian.Uint32(raw.TxData[pointer : pointer+4])
 
 	return Transaction{
-		TxHash:    raw.TxHash,
+		TxHash:    hex.EncodeToString(raw.TxHash),
 		Sender:    sender,
 		Receiver:  receiver,
 		Amount:    amount,
 		Fee:       fee,
 		Timestamp: timestamp,
-		PublicKey: raw.PublicKey,
-		Signature: raw.Signature,
+		PublicKey: hex.EncodeToString(raw.PublicKey),
+		Signature: hex.EncodeToString(raw.Signature),
 	}
+}
+
+func ToJson(transaction Transaction) string {
+	jsonBytes, err := json.Marshal(transaction)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return string(jsonBytes)
 }
