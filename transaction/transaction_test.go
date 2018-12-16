@@ -31,6 +31,16 @@ func TestToRaw(t *testing.T) {
 	fmt.Printf("raw: %x\n", raw)
 }
 
+func TestFromRaw(t *testing.T) {
+	fmt.Println("Test From Raw")
+	tx1 := FromJSON(GetNewTransaction())
+	raw := ToRaw(tx1)
+	tx2 := FromRaw(raw)
+
+	fmt.Printf("Tx1: %x \n", tx1)
+	fmt.Printf("Tx2: %x \n", tx2)
+}
+
 func GetNewTransaction() TransactionJSON {
 
 	walletSender := wallet.CreateWallet()

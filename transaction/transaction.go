@@ -62,7 +62,7 @@ func FromJSON(json TransactionJSON) Transaction {
 		log.Fatal(err)
 	}
 
-	return Transaction{
+	tx := Transaction{
 		Sender:    Sender,
 		Receiver:  Receiver,
 		Amount:    json.Amount,
@@ -71,6 +71,10 @@ func FromJSON(json TransactionJSON) Transaction {
 		PublicKey: PublicKey,
 		Signature: Signature,
 	}
+
+	tx.TxHash = ToRaw(tx).TxHash
+
+	return tx
 }
 
 func ToRaw(transaction Transaction) TransactionRaw {
@@ -96,5 +100,28 @@ func ToRaw(transaction Transaction) TransactionRaw {
 		TxData:    data,
 		PublicKey: transaction.PublicKey,
 		Signature: transaction.Signature,
+	}
+}
+
+func FromRaw(raw TransactionRaw) Transaction {
+	pointer := 32 + 32
+
+	amount := binary.BigEndian.Uint64(raw.TxData[pointer : pointer+8])
+	pointer += 8
+
+	fee := binary.BigEndian.Uint64(raw.TxData[pointer : pointer+8])
+	pointer += 8
+
+	timestamp := binary.BigEndian.Uint32(raw.TxData[pointer : pointer+4])
+
+	return Transaction{
+		TxHash:    raw.TxHash,
+		Sender:    raw.TxData[0:32],
+		Receiver:  raw.TxData[32 : 32+32],
+		Amount:    amount,
+		Fee:       fee,
+		Timestamp: timestamp,
+		PublicKey: raw.PublicKey,
+		Signature: raw.Signature,
 	}
 }
