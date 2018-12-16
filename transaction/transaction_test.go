@@ -14,15 +14,26 @@ func TestFromRaw(t *testing.T) {
 	raw := ToRaw(tx1)
 	tx2 := FromRaw(raw)
 
-	fmt.Printf("Tx1: %x \n", tx1)
-	fmt.Printf("Tx2: %x \n", tx2)
+	if tx1 != tx2 {
+		fmt.Printf("Tx1: %x \n", tx1)
+		fmt.Printf("Tx2: %x \n", tx2)
+		t.Error("tx1 != tx2")
+	}
+
 }
 
-func TestToJson(t *testing.T) {
-	tx := GetNewTransaction()
-	json := ToJson(tx)
+func TestFromJSON(t *testing.T) {
 
-	fmt.Println(json)
+	jsonStringA := ToJson(GetNewTransaction())
+	tx := FromJSON(jsonStringA)
+	jsonStringB := ToJson(tx)
+
+	if jsonStringA != jsonStringB {
+		fmt.Println("A: ", jsonStringA)
+		fmt.Println("B: ", jsonStringB)
+		t.Error("A != B")
+	}
+
 }
 
 func GetNewTransaction() Transaction {

@@ -110,3 +110,12 @@ func ToJson(transaction Transaction) string {
 
 	return string(jsonBytes)
 }
+
+func FromJSON(jsonString string) Transaction {
+	var tx Transaction
+	err := json.Unmarshal([]byte(jsonString), &tx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return tx
+}
