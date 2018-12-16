@@ -1,11 +1,14 @@
 package transaction
 
 import (
+	"../wallet"
+	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"log"
+	"math/big"
 )
 
 type Transaction struct {
@@ -118,4 +121,16 @@ func FromJSON(jsonString string) Transaction {
 		log.Fatal(err)
 	}
 	return tx
+}
+
+func CheckSignature(raw TransactionRaw) bool {
+
+	pubKey := wallet.RestorePubKey(raw.PublicKey)
+
+	sig := raw.Signature
+
+	r := new(big.Int).SetBytes(sig[:len(sig)/2])
+	s := new(big.Int).SetBytes(sig[len(sig)/2:])
+
+	return ecdsa.Verify(&pubKey, raw.TxData, r, s)
 }

@@ -55,3 +55,14 @@ func GetNewTransaction() Transaction {
 
 	return tx
 }
+
+func TestCheckSignature(t *testing.T) {
+	tx := GetNewTransaction()
+	raw := ToRaw(tx)
+
+	if !CheckSignature(raw) {
+		fmt.Printf("Signature: %x \n", raw.Signature)
+		t.Error("signature is not correct")
+	}
+
+}
