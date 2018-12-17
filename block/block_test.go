@@ -1,6 +1,7 @@
 package block
 
 import (
+	"bytes"
 	"encoding/hex"
 	"log"
 	"testing"
@@ -14,6 +15,21 @@ func TestToRaw(t *testing.T) {
 
 	log.Printf("BlHash: %s\n", bl.BlHash)
 	log.Printf("block: %x/n", bl)
+}
+
+func TestFromRaw(t *testing.T) {
+
+	blA := GetNewBlock()
+	rawA := ToRaw(blA)
+	blB := FromRaw(rawA)
+	rawB := ToRaw(blB)
+
+	if !bytes.Equal(rawA.BlData, rawB.BlData) {
+		t.Fatal("Block A != Block B")
+	}
+
+	log.Printf("blA: %x\n", rawA)
+	log.Printf("blB: %x\n", rawB)
 }
 
 func GetNewBlock() Block {

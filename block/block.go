@@ -35,6 +35,10 @@ func ToRaw(block Block) BlockRaw {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if len(previous) == 0 {
+		previous = make([]byte, 32)
+	}
+	log.Printf("Previous: %x\n", previous)
 
 	timestamp := make([]byte, 4)
 	binary.BigEndian.PutUint32(timestamp, block.Timestamp)
@@ -42,6 +46,9 @@ func ToRaw(block Block) BlockRaw {
 	nonce, err := hex.DecodeString(block.Nonce)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if len(nonce) == 0 {
+		nonce = make([]byte, 32)
 	}
 
 	data := append(height, previous...)
@@ -76,4 +83,44 @@ func ToRaw(block Block) BlockRaw {
 	}
 
 	return raw
+}
+
+func FromRaw(raw BlockRaw) Block {
+	pointer := 0
+	height := binary.BigEndian.Uint32(raw.BlData[pointer : pointer+4])
+	pointer += 4
+
+	previous := hex.EncodeToString(raw.BlData[pointer : pointer+32])
+	pointer += 32
+
+	timestamp := binary.BigEndian.Uint32(raw.BlData[pointer : pointer+4])
+	pointer += 4
+
+	nonce := hex.EncodeToString(raw.BlData[pointer : pointer+32])
+	pointer += 32
+
+	var txList []transaction.Transaction
+
+	log.Print("BlDataLength: ", len(raw.BlData), "\n")
+	for pointer < len(raw.BlData)-32 {
+		log.Print("Pointer: ", pointer, "\n")
+		tx := hex.EncodeToString(raw.BlData[pointer : pointer+32])
+		txList = append(txList, transaction.Transaction{
+			TxHash: tx,
+		})
+		pointer += 32
+	}
+
+	bl := Block{
+		BlHash:    hex.EncodeToString(raw.BlHash),
+		Height:    height,
+		Previous:  previous,
+		Timestamp: timestamp,
+		Nonce:     nonce,
+		TxList:    txList,
+		PublicKey: hex.EncodeToString(raw.PublicKey),
+		Signature: hex.EncodeToString(raw.Signature),
+	}
+
+	return bl
 }
