@@ -48,15 +48,21 @@ func GetNewTransaction() Transaction {
 		Fee:       12,
 		Timestamp: uint32(time.Now().Unix()),
 		PublicKey: hex.EncodeToString(walletSender.PublicKey),
-		Signature: "0f23ab2356",
 	}
 
 	tx.TxHash = hex.EncodeToString(ToRaw(tx).TxHash)
+
+	raw := ToRaw(tx)
+	privateKey := wallet.RestorePrivKey(walletSender.PrivateKey)
+	Sign(&raw, privateKey)
+
+	tx.Signature = hex.EncodeToString(raw.Signature)
 
 	return tx
 }
 
 func TestCheckSignature(t *testing.T) {
+
 	tx := GetNewTransaction()
 	raw := ToRaw(tx)
 
@@ -64,5 +70,4 @@ func TestCheckSignature(t *testing.T) {
 		fmt.Printf("Signature: %x \n", raw.Signature)
 		t.Error("signature is not correct")
 	}
-
 }

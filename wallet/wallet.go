@@ -22,10 +22,7 @@ func CreateWallet() Wallet {
 		log.Fatal(err)
 	}
 
-	x509EncodedPriv, err := x509.MarshalECPrivateKey(privateKey)
-	if err != nil {
-		log.Fatal(err)
-	}
+	x509EncodedPriv := PrivateToBytes(*privateKey)
 
 	return RestoreWallet(x509EncodedPriv)
 }
@@ -34,10 +31,7 @@ func RestoreWallet(x509EncodedPriv []byte) Wallet {
 
 	privateKey := RestorePrivKey(x509EncodedPriv)
 
-	x509EncodedPub, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
-	if err != nil {
-		log.Fatal(err)
-	}
+	x509EncodedPub := PublicToBytes(privateKey.PublicKey)
 
 	address := sha256.Sum256(x509EncodedPub)
 
@@ -63,4 +57,20 @@ func RestorePubKey(x509EncodedPub []byte) ecdsa.PublicKey {
 	}
 	publicKey := genericPublicKey.(*ecdsa.PublicKey)
 	return *publicKey
+}
+
+func PublicToBytes(publicKey ecdsa.PublicKey) []byte {
+	x509EncodedPub, err := x509.MarshalPKIXPublicKey(&publicKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return x509EncodedPub
+}
+
+func PrivateToBytes(privateKey ecdsa.PrivateKey) []byte {
+	x509EncodedPriv, err := x509.MarshalECPrivateKey(&privateKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return x509EncodedPriv
 }

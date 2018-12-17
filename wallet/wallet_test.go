@@ -8,7 +8,7 @@ import (
 func TestCreateWallet(t *testing.T) {
 	wallet := CreateWallet()
 
-	fmt.Printf("Wallet: %x\n", wallet)
+	fmt.Printf("Wallet: %x \n", wallet)
 }
 
 func TestRestoreWallet(t *testing.T) {

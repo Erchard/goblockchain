@@ -2,7 +2,9 @@ package transaction
 
 import (
 	"../wallet"
+	"bytes"
 	"crypto/ecdsa"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
@@ -132,5 +134,29 @@ func CheckSignature(raw TransactionRaw) bool {
 	r := new(big.Int).SetBytes(sig[:len(sig)/2])
 	s := new(big.Int).SetBytes(sig[len(sig)/2:])
 
-	return ecdsa.Verify(&pubKey, raw.TxData, r, s)
+	return ecdsa.Verify(&pubKey, raw.TxHash, r, s)
+}
+
+func Sign(raw *TransactionRaw, privateKey ecdsa.PrivateKey) {
+
+	hash := sha256.Sum256(raw.TxData)
+
+	if !bytes.Equal(raw.TxHash, hash[:]) {
+		log.Fatal("Hash Transaction Error")
+		raw.TxHash = hash[:]
+	}
+
+	x509EncodedPub := wallet.PublicToBytes(privateKey.PublicKey)
+
+	if !bytes.Equal(x509EncodedPub, raw.PublicKey) {
+		log.Fatal("Public key is not correct")
+		raw.PublicKey = x509EncodedPub
+	}
+
+	r, s, err := ecdsa.Sign(rand.Reader, &privateKey, hash[:])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	raw.Signature = append(r.Bytes(), s.Bytes()...)
 }
