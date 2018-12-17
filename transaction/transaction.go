@@ -125,18 +125,6 @@ func FromJSON(jsonString string) Transaction {
 	return tx
 }
 
-func CheckSignature(raw TransactionRaw) bool {
-
-	pubKey := wallet.RestorePubKey(raw.PublicKey)
-
-	sig := raw.Signature
-
-	r := new(big.Int).SetBytes(sig[:len(sig)/2])
-	s := new(big.Int).SetBytes(sig[len(sig)/2:])
-
-	return ecdsa.Verify(&pubKey, raw.TxHash, r, s)
-}
-
 func Sign(raw *TransactionRaw, privateKey ecdsa.PrivateKey) {
 
 	hash := sha256.Sum256(raw.TxData)
@@ -159,4 +147,16 @@ func Sign(raw *TransactionRaw, privateKey ecdsa.PrivateKey) {
 	}
 
 	raw.Signature = append(r.Bytes(), s.Bytes()...)
+}
+
+func CheckSignature(raw TransactionRaw) bool {
+
+	pubKey := wallet.RestorePubKey(raw.PublicKey)
+
+	sig := raw.Signature
+
+	r := new(big.Int).SetBytes(sig[:len(sig)/2])
+	s := new(big.Int).SetBytes(sig[len(sig)/2:])
+
+	return ecdsa.Verify(&pubKey, raw.TxHash, r, s)
 }
