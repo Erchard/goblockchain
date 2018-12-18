@@ -2,10 +2,15 @@ package block
 
 import (
 	"../transaction"
+	"../wallet"
+	"bytes"
+	"crypto/ecdsa"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"log"
+	"math/big"
 )
 
 type Block struct {
@@ -38,7 +43,6 @@ func ToRaw(block Block) BlockRaw {
 	if len(previous) == 0 {
 		previous = make([]byte, 32)
 	}
-	log.Printf("Previous: %x\n", previous)
 
 	timestamp := make([]byte, 4)
 	binary.BigEndian.PutUint32(timestamp, block.Timestamp)
@@ -101,9 +105,7 @@ func FromRaw(raw BlockRaw) Block {
 
 	var txList []transaction.Transaction
 
-	log.Print("BlDataLength: ", len(raw.BlData), "\n")
-	for pointer < len(raw.BlData)-32 {
-		log.Print("Pointer: ", pointer, "\n")
+	for pointer < len(raw.BlData) {
 		tx := hex.EncodeToString(raw.BlData[pointer : pointer+32])
 		txList = append(txList, transaction.Transaction{
 			TxHash: tx,
@@ -123,4 +125,40 @@ func FromRaw(raw BlockRaw) Block {
 	}
 
 	return bl
+}
+
+func Sign(raw *BlockRaw, privateKey ecdsa.PrivateKey) {
+
+	hash := sha256.Sum256(raw.BlData)
+
+	if !bytes.Equal(raw.BlHash, hash[:]) {
+		log.Fatal("Hash Transaction Error")
+		raw.BlHash = hash[:]
+	}
+
+	x509EncodedPub := wallet.PublicToBytes(privateKey.PublicKey)
+
+	if !bytes.Equal(x509EncodedPub, raw.PublicKey) {
+		log.Fatal("Public key is not correct")
+		raw.PublicKey = x509EncodedPub
+	}
+
+	r, s, err := ecdsa.Sign(rand.Reader, &privateKey, hash[:])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	raw.Signature = append(r.Bytes(), s.Bytes()...)
+}
+
+func CheckSignature(raw BlockRaw) bool {
+
+	pubKey := wallet.RestorePubKey(raw.PublicKey)
+
+	sig := raw.Signature
+
+	r := new(big.Int).SetBytes(sig[:len(sig)/2])
+	s := new(big.Int).SetBytes(sig[len(sig)/2:])
+
+	return ecdsa.Verify(&pubKey, raw.BlHash, r, s)
 }
