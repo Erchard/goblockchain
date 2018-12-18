@@ -15,7 +15,7 @@ import (
 
 type Transaction struct {
 	TxHash    string `json:"tx_hash"`
-	Block     uint32 `json:"block"`
+	Block     string `json:"block"`
 	NoInBlock uint32 `json:"no_in_block"`
 	Sender    string `json:"sender"`
 	Receiver  string `json:"receiver"`

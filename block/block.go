@@ -162,3 +162,9 @@ func CheckSignature(raw BlockRaw) bool {
 
 	return ecdsa.Verify(&pubKey, raw.BlHash, r, s)
 }
+
+func AddTransaction(block *Block, tx *transaction.Transaction) {
+	tx.Block = block.BlHash
+	tx.NoInBlock = uint32(len(block.TxList))
+	block.TxList = append(block.TxList, *tx)
+}

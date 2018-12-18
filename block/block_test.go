@@ -54,7 +54,7 @@ func GetNewBlock() Block {
 		PublicKey: hex.EncodeToString(miner.PublicKey),
 	}
 
-	AddTransaction(&bl)
+	FillTransaction(&bl)
 
 	raw := ToRaw(bl)
 
@@ -66,15 +66,12 @@ func GetNewBlock() Block {
 	return bl
 }
 
-func AddTransaction(block *Block) {
-	var txList []transaction.Transaction
+func FillTransaction(block *Block) {
 
-	txList = append(txList, GetNewTransaction())
-	txList = append(txList, GetNewTransaction())
-	txList = append(txList, GetNewTransaction())
-	txList = append(txList, GetNewTransaction())
-
-	block.TxList = txList
+	for i := 0; i < 3; i++ {
+		tx := GetNewTransaction()
+		AddTransaction(block, &tx)
+	}
 }
 
 func GetNewTransaction() transaction.Transaction {
