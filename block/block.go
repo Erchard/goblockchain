@@ -51,8 +51,9 @@ func ToRaw(block Block) BlockRaw {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if len(nonce) == 0 {
-		nonce = make([]byte, 32)
+	if len(nonce) < 32 {
+		pad := make([]byte, 32-len(nonce))
+		nonce = append(pad, nonce...)
 	}
 
 	data := append(height, previous...)
