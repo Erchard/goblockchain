@@ -1,4 +1,4 @@
-package wallet
+package account
 
 import (
 	"crypto/ecdsa"
@@ -10,13 +10,13 @@ import (
 	"log"
 )
 
-type Wallet struct {
+type Account struct {
 	Address    string
 	PrivateKey []byte
 	PublicKey  []byte
 }
 
-func CreateWallet() Wallet {
+func CreateAccount() Account {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		log.Fatal(err)
@@ -24,10 +24,10 @@ func CreateWallet() Wallet {
 
 	x509EncodedPriv := PrivateToBytes(*privateKey)
 
-	return RestoreWallet(x509EncodedPriv)
+	return RestoreAccount(x509EncodedPriv)
 }
 
-func RestoreWallet(x509EncodedPriv []byte) Wallet {
+func RestoreAccount(x509EncodedPriv []byte) Account {
 
 	privateKey := RestorePrivKey(x509EncodedPriv)
 
@@ -35,7 +35,7 @@ func RestoreWallet(x509EncodedPriv []byte) Wallet {
 
 	address := sha256.Sum256(x509EncodedPub)
 
-	return Wallet{
+	return Account{
 		Address:    hex.EncodeToString(address[:]),
 		PrivateKey: x509EncodedPriv,
 		PublicKey:  x509EncodedPub,

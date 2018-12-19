@@ -1,8 +1,8 @@
 package block
 
 import (
+	"../account"
 	"../transaction"
-	"../wallet"
 	"bytes"
 	"encoding/hex"
 	"fmt"
@@ -45,8 +45,8 @@ func TestFromRaw(t *testing.T) {
 
 func GetNewBlock() Block {
 
-	miner := wallet.CreateWallet()
-	privKey := wallet.RestorePrivKey(miner.PrivateKey)
+	miner := account.CreateAccount()
+	privKey := account.RestorePrivKey(miner.PrivateKey)
 
 	bl := Block{
 		Height:    height,
@@ -75,22 +75,22 @@ func FillTransaction(block *Block) {
 }
 
 func GetNewTransaction() transaction.Transaction {
-	walletSender := wallet.CreateWallet()
-	walletReceiver := wallet.CreateWallet()
+	accountSender := account.CreateAccount()
+	accountReceiver := account.CreateAccount()
 
 	tx := transaction.Transaction{
-		Sender:    walletSender.Address,
-		Receiver:  walletReceiver.Address,
+		Sender:    accountSender.Address,
+		Receiver:  accountReceiver.Address,
 		Amount:    1234,
 		Fee:       12,
 		Timestamp: uint32(time.Now().Unix()),
-		PublicKey: hex.EncodeToString(walletSender.PublicKey),
+		PublicKey: hex.EncodeToString(accountSender.PublicKey),
 	}
 
 	tx.TxHash = hex.EncodeToString(transaction.ToRaw(tx).TxHash)
 
 	raw := transaction.ToRaw(tx)
-	privateKey := wallet.RestorePrivKey(walletSender.PrivateKey)
+	privateKey := account.RestorePrivKey(accountSender.PrivateKey)
 	transaction.Sign(&raw, privateKey)
 
 	tx.Signature = hex.EncodeToString(raw.Signature)

@@ -1,7 +1,7 @@
 package transaction
 
 import (
-	"../wallet"
+	"../account"
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/rand"
@@ -134,7 +134,7 @@ func Sign(raw *TransactionRaw, privateKey ecdsa.PrivateKey) {
 		raw.TxHash = hash[:]
 	}
 
-	x509EncodedPub := wallet.PublicToBytes(privateKey.PublicKey)
+	x509EncodedPub := account.PublicToBytes(privateKey.PublicKey)
 
 	if !bytes.Equal(x509EncodedPub, raw.PublicKey) {
 		log.Fatal("Public key is not correct")
@@ -151,7 +151,7 @@ func Sign(raw *TransactionRaw, privateKey ecdsa.PrivateKey) {
 
 func CheckSignature(raw TransactionRaw) bool {
 
-	pubKey := wallet.RestorePubKey(raw.PublicKey)
+	pubKey := account.RestorePubKey(raw.PublicKey)
 
 	sig := raw.Signature
 

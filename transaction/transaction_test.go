@@ -1,7 +1,7 @@
 package transaction
 
 import (
-	"../wallet"
+	"../account"
 	"encoding/hex"
 	"fmt"
 	"testing"
@@ -38,22 +38,22 @@ func TestFromJSON(t *testing.T) {
 
 func GetNewTransaction() Transaction {
 
-	walletSender := wallet.CreateWallet()
-	walletReceiver := wallet.CreateWallet()
+	accountSender := account.CreateAccount()
+	accountReceiver := account.CreateAccount()
 
 	tx := Transaction{
-		Sender:    walletSender.Address,
-		Receiver:  walletReceiver.Address,
+		Sender:    accountSender.Address,
+		Receiver:  accountReceiver.Address,
 		Amount:    1234,
 		Fee:       12,
 		Timestamp: uint32(time.Now().Unix()),
-		PublicKey: hex.EncodeToString(walletSender.PublicKey),
+		PublicKey: hex.EncodeToString(accountSender.PublicKey),
 	}
 
 	tx.TxHash = hex.EncodeToString(ToRaw(tx).TxHash)
 
 	raw := ToRaw(tx)
-	privateKey := wallet.RestorePrivKey(walletSender.PrivateKey)
+	privateKey := account.RestorePrivKey(accountSender.PrivateKey)
 	Sign(&raw, privateKey)
 
 	tx.Signature = hex.EncodeToString(raw.Signature)
