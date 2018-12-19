@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"log"
 	"math/big"
+	"time"
 )
 
 type Transaction struct {
@@ -159,4 +160,28 @@ func CheckSignature(raw TransactionRaw) bool {
 	s := new(big.Int).SetBytes(sig[len(sig)/2:])
 
 	return ecdsa.Verify(&pubKey, raw.TxHash, r, s)
+}
+
+func GetTestTransaction() Transaction {
+	accountSender := account.CreateAccount()
+	accountReceiver := account.CreateAccount()
+
+	tx := Transaction{
+		Sender:    accountSender.Address,
+		Receiver:  accountReceiver.Address,
+		Amount:    1234,
+		Fee:       12,
+		Timestamp: uint32(time.Now().Unix()),
+		PublicKey: hex.EncodeToString(accountSender.PublicKey),
+	}
+
+	tx.TxHash = hex.EncodeToString(ToRaw(tx).TxHash)
+
+	raw := ToRaw(tx)
+	privateKey := account.RestorePrivKey(accountSender.PrivateKey)
+	Sign(&raw, privateKey)
+
+	tx.Signature = hex.EncodeToString(raw.Signature)
+
+	return tx
 }

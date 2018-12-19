@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"log"
 	"math/big"
+	"time"
 )
 
 type Block struct {
@@ -168,4 +169,37 @@ func AddTransaction(block *Block, tx *transaction.Transaction) {
 	tx.Block = block.BlHash
 	tx.NoInBlock = uint32(len(block.TxList))
 	block.TxList = append(block.TxList, *tx)
+}
+
+var testheight uint32 = 0
+
+func GetTestBlock() Block {
+
+	miner := account.CreateAccount()
+	privKey := account.RestorePrivKey(miner.PrivateKey)
+
+	bl := Block{
+		Height:    testheight,
+		Timestamp: uint32(time.Now().Unix()),
+		PublicKey: hex.EncodeToString(miner.PublicKey),
+	}
+
+	FillTestTransaction(&bl)
+
+	raw := ToRaw(bl)
+
+	bl.BlHash = hex.EncodeToString(raw.BlHash)
+
+	Sign(&raw, privKey)
+	bl.Signature = hex.EncodeToString(raw.Signature)
+
+	return bl
+}
+
+func FillTestTransaction(bl *Block) {
+
+	for i := 0; i < 3; i++ {
+		tx := transaction.GetTestTransaction()
+		AddTransaction(bl, &tx)
+	}
 }

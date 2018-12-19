@@ -1,16 +1,13 @@
 package transaction
 
 import (
-	"../account"
-	"encoding/hex"
 	"fmt"
 	"testing"
-	"time"
 )
 
 func TestFromRaw(t *testing.T) {
 
-	tx1 := GetNewTransaction()
+	tx1 := GetTestTransaction()
 	raw := ToRaw(tx1)
 	tx2 := FromRaw(raw)
 
@@ -24,7 +21,7 @@ func TestFromRaw(t *testing.T) {
 
 func TestFromJSON(t *testing.T) {
 
-	jsonStringA := ToJson(GetNewTransaction())
+	jsonStringA := ToJson(GetTestTransaction())
 	tx := FromJSON(jsonStringA)
 	jsonStringB := ToJson(tx)
 
@@ -36,34 +33,9 @@ func TestFromJSON(t *testing.T) {
 
 }
 
-func GetNewTransaction() Transaction {
-
-	accountSender := account.CreateAccount()
-	accountReceiver := account.CreateAccount()
-
-	tx := Transaction{
-		Sender:    accountSender.Address,
-		Receiver:  accountReceiver.Address,
-		Amount:    1234,
-		Fee:       12,
-		Timestamp: uint32(time.Now().Unix()),
-		PublicKey: hex.EncodeToString(accountSender.PublicKey),
-	}
-
-	tx.TxHash = hex.EncodeToString(ToRaw(tx).TxHash)
-
-	raw := ToRaw(tx)
-	privateKey := account.RestorePrivKey(accountSender.PrivateKey)
-	Sign(&raw, privateKey)
-
-	tx.Signature = hex.EncodeToString(raw.Signature)
-
-	return tx
-}
-
 func TestCheckSignature(t *testing.T) {
 
-	tx := GetNewTransaction()
+	tx := GetTestTransaction()
 	raw := ToRaw(tx)
 
 	if !CheckSignature(raw) {

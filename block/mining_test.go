@@ -10,7 +10,7 @@ import (
 func TestMineBig(t *testing.T) {
 
 	miner := account.CreateAccount()
-	bl := GetNewBlock()
+	bl := GetTestBlock()
 	bl.PublicKey = hex.EncodeToString(miner.PublicKey)
 	privKey := account.RestorePrivKey(miner.PrivateKey)
 
