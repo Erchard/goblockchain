@@ -18,6 +18,8 @@ func TestGetBlock(t *testing.T) {
 		log.Fatal("Timestamp blocks don't equals")
 	}
 
+	log.Printf("BlB: %x \n", blB)
+
 	blC, err := GetBlock("00000")
 	if err != nil {
 		log.Print(err)

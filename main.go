@@ -1,7 +1,19 @@
-package goblockchain
+package main
 
-import "fmt"
+import (
+	"./mining"
+	"fmt"
+	"log"
+)
 
 func main() {
-	fmt.Println("Hello Go Blockchain!")
+	log.Println("Go Blockchain")
+	log.Println("Author: arsenguzhva@gmail.com")
+
+	mining.MineLoop()
+
+	var msg string
+
+	_, _ = fmt.Scanln(&msg)
+
 }
