@@ -4,6 +4,8 @@ import (
 	"../account"
 	"../block"
 	"../blockchain"
+	"../mempool"
+	"../transaction"
 	"crypto/ecdsa"
 	"encoding/hex"
 	"log"
@@ -72,7 +74,8 @@ func MineLoop(ending chan bool) {
 	for !stop {
 		select {
 		case stop = <-ending:
-			log.Println("Stop... ", stop)
+			log.Println("Stop: ", stop)
+			log.Println("Press Enter")
 			break
 		default:
 			lastBlock := blockchain.GetLastBlock()
@@ -86,6 +89,10 @@ func MineLoop(ending chan bool) {
 				bl.Height = lastBlock.Height + 1
 				bl.Previous = lastBlock.BlHash
 			}
+
+			minerTx := transaction.CreateMinerTx(miner)
+
+			bl.TxList = append(mempool.GetTransactions(), minerTx)
 
 			MineBig(&bl, privKey)
 			log.Printf("%d %s %s \n", bl.Height, bl.Previous, bl.BlHash)

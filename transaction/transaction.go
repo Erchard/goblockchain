@@ -185,3 +185,23 @@ func GetTestTransaction() Transaction {
 
 	return tx
 }
+
+func CreateMinerTx(miner account.Account) Transaction {
+	minerTx := Transaction{
+		Sender:    "0000000000000000000000000000000000000000000000000000000000000000",
+		Receiver:  miner.Address,
+		Amount:    100000000000,
+		Fee:       0,
+		Timestamp: uint32(time.Now().Unix()),
+		PublicKey: hex.EncodeToString(miner.PublicKey),
+	}
+
+	minerTx.TxHash = hex.EncodeToString(ToRaw(minerTx).TxHash)
+
+	raw := ToRaw(minerTx)
+	privateKey := account.RestorePrivKey(miner.PrivateKey)
+	Sign(&raw, privateKey)
+
+	minerTx.Signature = hex.EncodeToString(raw.Signature)
+	return minerTx
+}
