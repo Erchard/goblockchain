@@ -6,6 +6,7 @@ import (
 	"../blockchain"
 	"../mempool"
 	"../transaction"
+	"../wallet"
 	"crypto/ecdsa"
 	"encoding/hex"
 	"log"
@@ -74,6 +75,11 @@ func MineLoop(ending chan bool) {
 	for !stop {
 		select {
 		case stop = <-ending:
+
+			log.Printf("%s: %d",
+				miner.Address,
+				wallet.Wallets[miner.Address].Amount)
+
 			log.Println("Stop: ", stop)
 			log.Println("Press Enter")
 			break

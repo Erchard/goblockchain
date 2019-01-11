@@ -137,3 +137,7 @@ func FillTestTransaction(bl *Block) {
 		AddTransaction(bl, &tx)
 	}
 }
+
+func BlockIsValid(bl Block) bool {
+	return true
+}

@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"../block"
+	"../wallet"
 	"errors"
 )
 
@@ -10,8 +11,11 @@ var blockchain = make(map[string]block.Block)
 var lastBlock *block.Block
 
 func AddBlock(bl block.Block) {
-	blockchain[bl.BlHash] = bl
-	lastBlock = &bl
+	if block.BlockIsValid(bl) {
+		blockchain[bl.BlHash] = bl
+		lastBlock = &bl
+		wallet.TransferMoney(bl)
+	}
 }
 
 func GetBlock(BlHash string) (*block.Block, error) {
