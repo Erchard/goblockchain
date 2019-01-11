@@ -1,16 +1,11 @@
 package block
 
 import (
-	"../account"
 	"../transaction"
-	"bytes"
-	"crypto/ecdsa"
-	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"log"
-	"math/big"
 	"time"
 )
 
@@ -21,15 +16,11 @@ type Block struct {
 	Timestamp uint32                    `json:"timestamp"`
 	Nonce     string                    `json:"nonce"`
 	TxList    []transaction.Transaction `json:"tx_list"`
-	PublicKey string                    `json:"pub_key"`
-	Signature string                    `json:"signature"`
 }
 
 type BlockRaw struct {
-	BlHash    []byte
-	BlData    []byte
-	PublicKey []byte
-	Signature []byte
+	BlHash []byte
+	BlData []byte
 }
 
 func ToRaw(block Block) BlockRaw {
@@ -71,21 +62,9 @@ func ToRaw(block Block) BlockRaw {
 
 	blHash := sha256.Sum256(data)
 
-	pubKey, err := hex.DecodeString(block.PublicKey)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	signature, err := hex.DecodeString(block.Signature)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	raw := BlockRaw{
-		BlHash:    blHash[:],
-		BlData:    data,
-		PublicKey: pubKey,
-		Signature: signature,
+		BlHash: blHash[:],
+		BlData: data,
 	}
 
 	return raw
@@ -122,47 +101,9 @@ func FromRaw(raw BlockRaw) Block {
 		Timestamp: timestamp,
 		Nonce:     nonce,
 		TxList:    txList,
-		PublicKey: hex.EncodeToString(raw.PublicKey),
-		Signature: hex.EncodeToString(raw.Signature),
 	}
 
 	return bl
-}
-
-func Sign(raw *BlockRaw, privateKey ecdsa.PrivateKey) {
-
-	hash := sha256.Sum256(raw.BlData)
-
-	if !bytes.Equal(raw.BlHash, hash[:]) {
-		log.Fatal("Hash Transaction Error")
-		raw.BlHash = hash[:]
-	}
-
-	x509EncodedPub := account.PublicToBytes(privateKey.PublicKey)
-
-	if !bytes.Equal(x509EncodedPub, raw.PublicKey) {
-		log.Fatal("Public key is not correct")
-		raw.PublicKey = x509EncodedPub
-	}
-
-	r, s, err := ecdsa.Sign(rand.Reader, &privateKey, hash[:])
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	raw.Signature = append(r.Bytes(), s.Bytes()...)
-}
-
-func CheckSignature(raw BlockRaw) bool {
-
-	pubKey := account.RestorePubKey(raw.PublicKey)
-
-	sig := raw.Signature
-
-	r := new(big.Int).SetBytes(sig[:len(sig)/2])
-	s := new(big.Int).SetBytes(sig[len(sig)/2:])
-
-	return ecdsa.Verify(&pubKey, raw.BlHash, r, s)
 }
 
 func AddTransaction(block *Block, tx *transaction.Transaction) {
@@ -175,13 +116,9 @@ var testheight uint32 = 0
 
 func GetTestBlock() Block {
 
-	miner := account.CreateAccount()
-	privKey := account.RestorePrivKey(miner.PrivateKey)
-
 	bl := Block{
 		Height:    testheight,
 		Timestamp: uint32(time.Now().Unix()),
-		PublicKey: hex.EncodeToString(miner.PublicKey),
 	}
 
 	FillTestTransaction(&bl)
@@ -189,9 +126,6 @@ func GetTestBlock() Block {
 	raw := ToRaw(bl)
 
 	bl.BlHash = hex.EncodeToString(raw.BlHash)
-
-	Sign(&raw, privKey)
-	bl.Signature = hex.EncodeToString(raw.Signature)
 
 	return bl
 }
