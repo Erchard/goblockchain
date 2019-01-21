@@ -4,6 +4,9 @@ import (
 	"../account"
 	"../block"
 	"../blockchain"
+	"../mempool"
+	"../transaction"
+	"../wallet"
 	"crypto/ecdsa"
 	"encoding/hex"
 	"log"
@@ -45,14 +48,6 @@ func MineBig(bl *block.Block, key ecdsa.PrivateKey) {
 		blHash.SetBytes(hashBytes)
 
 		if difficult.Cmp(blHash) > 0 {
-
-			//log.Printf("Difficult: %x\n", difficult.Bytes())
-			//log.Printf("BlHash:    %x\n", blHash.Bytes())
-			raw := block.ToRaw(*bl)
-			block.Sign(&raw, key)
-			fromRaw := block.FromRaw(raw)
-			bl.Nonce = fromRaw.Nonce
-			bl.Signature = fromRaw.Signature
 			break
 		}
 
@@ -67,7 +62,7 @@ func MineBig(bl *block.Block, key ecdsa.PrivateKey) {
 
 }
 
-func MineLoop() {
+func MineLoop(ending chan bool) {
 
 	miner = account.CreateAccount()
 
@@ -75,24 +70,41 @@ func MineLoop() {
 
 	privKey := account.RestorePrivKey(miner.PrivateKey)
 
-	for {
+	stop := false
 
-		lastBlock := blockchain.GetLastBlock()
-		bl := block.Block{
-			Height:    0,
-			Previous:  "0000000000000000000000000000000000000000000000000000000000000000",
-			Timestamp: uint32(time.Now().Unix()),
-			PublicKey: hex.EncodeToString(miner.PublicKey),
+	for !stop {
+		select {
+		case stop = <-ending:
+
+			log.Printf("%s: %d",
+				miner.Address,
+				wallet.Wallets[miner.Address].Amount)
+
+			log.Println("Stop: ", stop)
+			log.Println("Press Enter")
+			break
+		default:
+			lastBlock := blockchain.GetLastBlock()
+			bl := block.Block{
+				Height:    0,
+				Previous:  "0000000000000000000000000000000000000000000000000000000000000000",
+				Timestamp: uint32(time.Now().Unix()),
+			}
+
+			if lastBlock != nil {
+				bl.Height = lastBlock.Height + 1
+				bl.Previous = lastBlock.BlHash
+			}
+
+			minerTx := transaction.CreateMinerTx(miner)
+
+			bl.TxList = append(mempool.GetTransactions(), minerTx)
+
+			MineBig(&bl, privKey)
+			log.Printf("%d %s %s \n", bl.Height, bl.Previous, bl.BlHash)
+			blockchain.AddBlock(bl)
 		}
 
-		if lastBlock != nil {
-			bl.Height = lastBlock.Height + 1
-			bl.Previous = lastBlock.BlHash
-		}
-
-		MineBig(&bl, privKey)
-		log.Printf("%d %s %s \n", bl.Height, bl.Previous, bl.BlHash)
-		blockchain.AddBlock(bl)
 	}
 
 }

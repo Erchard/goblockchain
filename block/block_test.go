@@ -2,7 +2,6 @@ package block
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"testing"
 )
@@ -35,15 +34,4 @@ func TestFromRaw(t *testing.T) {
 
 	log.Printf("blA: %x\n", rawA)
 	log.Printf("blB: %x\n", rawB)
-}
-
-func TestCheckSignature(t *testing.T) {
-
-	bl := GetTestBlock()
-	raw := ToRaw(bl)
-
-	if !CheckSignature(raw) {
-		fmt.Printf("Signature: %x \n", raw.Signature)
-		t.Error("signature is not correct")
-	}
 }
