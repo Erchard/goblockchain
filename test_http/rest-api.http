@@ -1,0 +1,14 @@
+POST http://localhost:1234/rpc
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": "curltext",
+  "method": "Arith.Multiply",
+  "params":[{"A":2,"B":3}]
+}
+
+###
+

@@ -2,6 +2,7 @@ package main
 
 import (
 	"./mining"
+	"./rpc/server"
 	"fmt"
 	"log"
 )
@@ -9,6 +10,8 @@ import (
 func main() {
 	log.Println("Go Blockchain")
 	log.Println("Author: arsenguzhva@gmail.com")
+
+	go RpcServer.StartServer()
 
 	ending := make(chan bool, 1)
 
